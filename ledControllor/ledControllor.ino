@@ -32,9 +32,10 @@ volatile short ledState[8] = {0};
 volatile bool ledLayerState = true;
 
 void anime_spark(int times=10, int fre=800, bool speedUp = true);
-void anime_pointMoving(int times=100, int fre=300);
-void anime_triangleMoving(int times=100, int fre=300);
-void anime_circleRuning(int times=100, int fre=100);
+void anime_oscillation(int times=100, int fre=100, bool speedUp = true);
+void anime_pointMoving(int times=10, int fre=300);
+void anime_triangleMoving(int times=10, int fre=300);
+void anime_circleRuning(int times=20, int fre=100);
 void anime_lightUpSmooth();
 void anime_planeFlip(int times=100, int fre=300);
 
@@ -54,11 +55,13 @@ void setup() {
 }
     
 void loop() {
-    //anime_spark(10, 100, true);
-    //anime_pointMoving();
+    anime_spark(20, 100, true);
+    delay(100);
+    anime_oscillation(20, 200);
+    anime_pointMoving();
     //anime_triangleMoving();
-    //anime_circleRuning();
-    anime_planeFlip();
+    anime_circleRuning();
+    //anime_planeFlip();
 }
 
 void anime_spark(int times=10, int fre=800, bool speedUp = true){
@@ -75,9 +78,16 @@ void anime_spark(int times=10, int fre=800, bool speedUp = true){
         }
     }
 }
-//getVotage( (sin(millis()/period)+1)*120 );
+void anime_oscillation(int times, int fre, bool speedUp){
+    for(int i = 0;i<times; i++){
+        for(int k = 0; k<8; k++){
+            ledState[k] = getVotage( (sin(millis()/fre)+1)*120 );
+            delay(20);
+        }
+    }
+}
 
-void anime_pointMoving(int times=100, int fre=300){
+void anime_pointMoving(int times, int fre){
     short index = B101;
     Serial.println(index, BIN);
     for(int i = 0; i<times; i++){
@@ -88,7 +98,7 @@ void anime_pointMoving(int times=100, int fre=300){
     }
 }
 
-void anime_triangleMoving(int times=100, int fre=300){
+void anime_triangleMoving(int times, int fre){
     static short head = B000;
     static short tail = B001;
     for(int i = 0; i < times; i++){
@@ -100,7 +110,7 @@ void anime_triangleMoving(int times=100, int fre=300){
     }
 }
 
-void anime_circleRuning(int times=100, int fre){
+void anime_circleRuning(int times, int fre){
     static short upper = 0;
     static short lower = 0;
     static bool layer = false;
@@ -120,8 +130,8 @@ void anime_circleRuning(int times=100, int fre){
 void anime_lightUpSmooth(){
     //static 
 }
-void anime_planeFlip(int times=100, int fre=300){
-    static short plane[4] = {B000, B001, B010, B011};
+void anime_planeFlip(int times, int fre){
+    static short plane[4] = {B000, B001, B011, B010};
     static short edge[2] = {0, 0};
     for(int w=0; w<times; w++){
         // Choose two points on the same edge
