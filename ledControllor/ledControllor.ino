@@ -114,21 +114,51 @@ void anime_circleRuning(int times=100, int fre=300){
 void anime_lightUpSmooth(){
     static 
 }
-void anime_planeFlip(){
+void anime_planeFlip(int times=100, int fre=300){
     static char plane[4] = {0x000, 0x001, 0x010, 0x011};
     static char edge[2] = {0, 0};
-    edge[0] = (char)random(0, 3);
-    do{
-        edge[1] = (char)random(0, 3);
-    }while( !((planeIndex == prePlaneIndex) && (planeScale == prePlaneScale)) );
-    prePlaneIndex = planeIndex;
-    prePlaneScale = planeScale;
+    for(int w=0; w<times; w++){
+        // Choose two points on the same edge
+        edge[0] = (char)random(0, 3);
+        char err = 0;
+        do{
+            edge[1] = (char)random(0, 3);
+            err = plane[edge[0]]^plane[edge[1]];
+        }while( !(err==1 || err==2 || err==6) );     // Get a index which not equal to the other one, and must be the same side
 
-    for(int x=0; x<2; x++)
-        for(int y=0; y<2; y++)
-            for(int z=0; z<2; z++){
-                if(planeIndex == 0x100 && ) 
-            }
+        // Get the bit on the selected edge which need to be change
+        static diffEdge[2]={0}, index=0;
+        char mutual = err;
+        for(int i = 1; i<=4; i*=2)
+            if(i != mutual) diffEdge[index++] = i;   // diffEdge = 0x001, 0x010, 0x100
+            
+        // Determine if the bit order is wrong
+        bool wrongOrder = matched(plane, 4, edge[0]^diffEdge[0]);
+
+        // Update leds by diffEdges
+        updateLedByHyperIndexArray(plane, 4, 255);
+        delay(fre);
+        updateLedByHyperIndexArray(plane, 4, 0);
+        plane[edge[0]] ^= diffEdge[wrongOrder?1:0];
+        plane[edge[1]] ^= diffEdge[wrongOrder?1:0];
+        updateLedByHyperIndexArray(plane, 4, 255);
+        delay(fre);
+        updateLedByHyperIndexArray(plane, 4, 0);
+        plane[edge[0]] ^= diffEdge[wrongOrder?0:1];
+        plane[edge[1]] ^= diffEdge[wrongOrder?0:1];
+        updateLedByHyperIndexArray(plane, 4, 255);
+        delay(fre);
+        updateLedByHyperIndexArray(plane, 4, 0);
+    }
+}
+bool matched(char *arr, int len, char target){
+    for(int i=0; i<len; i++)
+        if(arr[i] == target) return true;
+    return false;
+}
+void updateLedByHyperIndexArray(char *arr, char len, char state){
+    for(int i=0; i<len; i++)
+        modifyLedByHyperIndex(arr[i], state);
 }
 void randomChoose(char *index){
     /*
@@ -139,10 +169,7 @@ void randomChoose(char *index){
      */
     char rnd = (char)random(0, 2);
     char select = 1 << rnd; // Offset to target bit
-    char mask = !select;    // Filter mask bits
-    select &= *index;       // Get the origin value of target bit
-    *index &= mask;         // Get data except for the target bit
-    *index |= !select;      // Combine the two data
+    *index ^= select;      // Combine the two data
 }
 
 inline char getVotage(char state){
