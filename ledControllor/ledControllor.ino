@@ -5,13 +5,13 @@
  */
 
 #define layer1_Pin A0
-#define layer2_Pin A1
-#define ledA_Pin 6
-#define ledB_Pin 5
-#define ledC_Pin 10
-#define ledD_Pin 9
+#define layer2_Pin A1 //3 5 9 10
+#define ledA_Pin 3//6
+#define ledB_Pin 9//5
+#define ledC_Pin 5//10
+#define ledD_Pin 10//9
 
-#define ledVotage 0.5
+#define ledVotage 2.7
 #define pwmMax 255
 const int ledVotageLimitPWM = 255-255*ledVotage/5;
 const short ledMap[2][2][2] = {
@@ -36,10 +36,10 @@ volatile short ledState[8] = {0};
 volatile bool ledLayerState = true;
 
 void anime_spark(int times=10, int fre=800, bool speedUp = true);
-void anime_oscillation(int times=100, int fre=100, bool speedUp = true);
+void anime_oscillation(int times=100, int fre=100, int delta=20, bool speedUp = true);
 void anime_pointMoving(int times=10, int fre=300);
 void anime_triangleMoving(int times=10, int fre=300);
-void anime_circleRuning(int times=20, int fre=100);
+void anime_circleRuning(int times=20, int fre=100, bool speedUp = true);
 void anime_lightUpSmooth();
 void anime_planeFlip(int times=100, int fre=300);
 
@@ -59,13 +59,13 @@ void setup() {
 }
     
 void loop() {
-    //anime_spark(20, 100, true);
-    //delay(100);
-    //anime_oscillation(20, 200);
-    //anime_pointMoving();
-    //anime_triangleMoving();
-    //anime_circleRuning();
-    anime_planeFlip();
+    anime_spark(20, 100, true);
+    delay(100);
+    anime_oscillation(20, 200, 20, true);
+    ////////anime_pointMoving();
+    anime_triangleMoving(80, 100);
+    anime_circleRuning(50, 300);
+    anime_planeFlip(30, 100);
 }
 
 void anime_spark(int times=10, int fre=800, bool speedUp = true){
@@ -82,11 +82,11 @@ void anime_spark(int times=10, int fre=800, bool speedUp = true){
         }
     }
 }
-void anime_oscillation(int times, int fre, bool speedUp){
+void anime_oscillation(int times, int fre, int delta, bool speedUp){
     for(int i = 0;i<times; i++){
         for(int k = 0; k<8; k++){
             ledState[k] = getVotage( (sin(millis()/fre)+1)*120 );
-            delay(20);
+            delay(delta);
         }
     }
 }
@@ -111,11 +111,12 @@ void anime_triangleMoving(int times, int fre){
         delay(fre);
     }
 }
-void anime_circleRuning(int times, int fre){
-    static short upper = 0;
-    static short lower = 0;
-    static bool layer = false;
+void anime_circleRuning(int times, int fre, bool speedUp){
+    short upper = 0;
+    short lower = 0;
+    bool layer = false;
     const short arr[4] = {B00, B01, B11, B10};
+    const int minimumFre = 50;
     for(int i=0;i<times;i++){
         upper = (upper>=3 ? 0 : upper+1);
         lower = (lower<=0 ? 3 : lower-1);
@@ -124,7 +125,14 @@ void anime_circleRuning(int times, int fre){
         delay(fre);
         modifyLedByHyperIndex((layer ? 0 : B100) | arr[upper], 0);
         modifyLedByHyperIndex((layer ? B100 : 0) | arr[lower], 0);
-        //if(i%(300/10)) layer = !layer;
+        if(i%(300/10) == 0){
+            layer = !layer;
+            delay(100);
+        }
+        if(speedUp){
+            //fre = minimumFre + fre*0.9;
+            fre = minimumFre + (times-i)*(fre-minimumFre)/times;
+        }
     }
 }
 void anime_lightUpSmooth(){
