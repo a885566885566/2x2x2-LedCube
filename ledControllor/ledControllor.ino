@@ -19,6 +19,10 @@ const short ledMap[2][2][2] = {
     {{B000, B001},{B010, B011}}
 };
 /* HyperIndex
+ *  A 00 | B 01
+ *  -----------
+ *  C 10 | D 11
+ *  
  *  layer0
  *   0 00 | 0 01
  *   0 10 | 0 11
@@ -55,13 +59,13 @@ void setup() {
 }
     
 void loop() {
-    anime_spark(20, 100, true);
-    delay(100);
-    anime_oscillation(20, 200);
-    anime_pointMoving();
+    //anime_spark(20, 100, true);
+    //delay(100);
+    //anime_oscillation(20, 200);
+    //anime_pointMoving();
     //anime_triangleMoving();
-    anime_circleRuning();
-    //anime_planeFlip();
+    //anime_circleRuning();
+    anime_planeFlip();
 }
 
 void anime_spark(int times=10, int fre=800, bool speedUp = true){
@@ -86,7 +90,6 @@ void anime_oscillation(int times, int fre, bool speedUp){
         }
     }
 }
-
 void anime_pointMoving(int times, int fre){
     short index = B101;
     Serial.println(index, BIN);
@@ -97,7 +100,6 @@ void anime_pointMoving(int times, int fre){
         delay(fre);
     }
 }
-
 void anime_triangleMoving(int times, int fre){
     static short head = B000;
     static short tail = B001;
@@ -109,7 +111,6 @@ void anime_triangleMoving(int times, int fre){
         delay(fre);
     }
 }
-
 void anime_circleRuning(int times, int fre){
     static short upper = 0;
     static short lower = 0;
@@ -126,13 +127,12 @@ void anime_circleRuning(int times, int fre){
         //if(i%(300/10)) layer = !layer;
     }
 }
-
 void anime_lightUpSmooth(){
     //static 
 }
 void anime_planeFlip(int times, int fre){
-    static short plane[4] = {B000, B001, B011, B010};
-    static short edge[2] = {0, 0};
+    static short plane[4] = {B000, B001, B010, B011};
+    static short edge[2]  = {0, 0};
     for(int w=0; w<times; w++){
         // Choose two points on the same edge
         edge[0] = (short)random(0, 4);
@@ -140,16 +140,16 @@ void anime_planeFlip(int times, int fre){
         do{
             edge[1] = (short)random(0, 4);
             err = plane[edge[0]]^plane[edge[1]];
-        }while( !(err==1 || err==2 || err==6) );     // Get a index which not equal to the other one, and must be the same side
+        }while( !(err==1 || err==2 || err==4) );     // Get a index which not equal to the other one, and must be the same side
 
         // Get the bit on the selected edge which need to be change
-        static short diffEdge[2]={0}, index=0;
+        short diffEdge[2]={0}, index=0;
         short mutual = err;
         for(int i = 1; i<=4; i*=2)
             if(i != mutual) diffEdge[index++] = i;   // diffEdge = B001, B010, B100
             
         // Determine if the bit order is wrong
-        bool wrongOrder = matched(plane, 4, edge[0]^diffEdge[0]);
+        bool wrongOrder = matched(plane, 4, plane[edge[0]]^diffEdge[0]);
 
         // Update leds by diffEdges
         updateLedByHyperIndexArray(plane, 4, 255);
@@ -193,10 +193,10 @@ void modifyLedByHyperIndex(short index, short state){
     if(index > B111) return;
     short offset = (index >> 2) ? 4 : 0;
     index &= B11;
-    if(index == B00)       ledState[offset  ] = getVotage(state);
-    else if(index == B01)  ledState[offset+1] = getVotage(state);
-    else if(index == B10)  ledState[offset+2] = getVotage(state);
-    else if(index == B11)  ledState[offset+3] = getVotage(state);
+    if(index == B00)       ledState[offset  ] = getVotage(state);   // A 6
+    else if(index == B01)  ledState[offset+1] = getVotage(state);   // B 5
+    else if(index == B10)  ledState[offset+2] = getVotage(state);   // C 10
+    else if(index == B11)  ledState[offset+3] = getVotage(state);   // D 9
 }
 
 void ISR_enable()
