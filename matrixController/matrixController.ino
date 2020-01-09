@@ -26,11 +26,11 @@ const bool ledMap[][length_x][length_y]={
 void setup(){
     for(int i =0; i<length_x; i++){
         pinMode(control_line_x[i], OUTPUT);
-        digitalWrtie(control_line_x[i], LOW);
+        digitalWrite(control_line_x[i], LOW);
     }
     for(int i =0; i<length_y; i++){
         pinMode(control_line_y[i], OUTPUT);
-        digitalWrtie(control_line_y[i], LOW);
+        digitalWrite(control_line_y[i], LOW);
     }
     delay(3000);
 }
@@ -65,5 +65,5 @@ ISR(TIMER2_COMPA_vect)
     for (int i=0; i<length_y; i++){
         digitalWrite(control_line_y[i], ledMap[map_idx][update_idx][i]);
     }
-    digitalWrite(control_line_x[update_idx], ledMap[map_idx][update_idx][i]);
+    digitalWrite(control_line_x[++update_idx], true);
 }
