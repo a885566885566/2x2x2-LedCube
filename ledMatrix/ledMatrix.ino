@@ -72,7 +72,7 @@ void setup() {
   pinMode(control_line_y, INPUT_PULLUP);
 
   // Detect 
-  delay(1000);
+  delay(2000);
   if(!digitalRead(control_line_x) && !digitalRead(control_line_y)){
     mode = 1;
     for(int i=0; i<5; i++){
